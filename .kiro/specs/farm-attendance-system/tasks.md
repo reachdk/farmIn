@@ -7,29 +7,29 @@
   - Create basic Express server with health check endpoint
   - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ] 2. Implement core data models and database layer
-  - [ ] 2.1 Create database schema and migration system
+- [x] 2. Implement core data models and database layer
+  - [x] 2.1 Create database schema and migration system
     - Write SQL schema for employees, attendance_records, time_categories, and sync_queue tables
     - Implement database migration system for schema versioning
     - Create database connection utilities with error handling
     - Write unit tests for database operations
     - _Requirements: 6.3, 6.4_
 
-  - [ ] 2.2 Implement Employee data model and repository
+  - [x] 2.2 Implement Employee data model and repository
     - Create Employee TypeScript interface and validation functions
     - Implement EmployeeRepository with CRUD operations
     - Write unit tests for employee data operations
     - Add employee authentication and role management
     - _Requirements: 4.1, 4.2, 5.1_
 
-  - [ ] 2.3 Implement AttendanceRecord data model and repository
+  - [x] 2.3 Implement AttendanceRecord data model and repository
     - Create AttendanceRecord interface with time calculation methods
     - Implement AttendanceRepository with clock in/out operations
     - Write unit tests for attendance record operations and time calculations
     - Add validation for preventing duplicate clock-ins
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [ ] 2.4 Implement TimeCategory configuration system
+  - [x] 2.4 Implement TimeCategory configuration system
     - Create TimeCategory model with threshold-based categorization logic
     - Implement TimeCategoryRepository with configuration management
     - Write unit tests for category assignment logic (including edge cases)

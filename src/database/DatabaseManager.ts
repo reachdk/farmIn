@@ -27,18 +27,28 @@ export class DatabaseManager {
 
   public async initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.dbPath, (err) => {
+      this.db = new sqlite3.Database(this.dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
         if (err) {
           console.error('Error opening database:', err);
-          reject(err);
+          reject(new Error(`Failed to initialize database: ${err.message}`));
         } else {
           console.log('Connected to SQLite database at:', this.dbPath);
-          this.runMigrations()
+          // Enable foreign key constraints
+          this.enableForeignKeys()
+            .then(() => this.runMigrations())
             .then(() => resolve())
-            .catch(reject);
+            .catch((migrationError) => {
+              console.error('Migration error:', migrationError);
+              reject(new Error(`Migration failed: ${migrationError.message}`));
+            });
         }
       });
     });
+  }
+
+  private async enableForeignKeys(): Promise<void> {
+    await this.run('PRAGMA foreign_keys = ON');
+    await this.run('PRAGMA journal_mode = WAL'); // Enable WAL mode for better concurrency
   }
 
   public async checkHealth(): Promise<boolean> {
@@ -78,13 +88,14 @@ export class DatabaseManager {
 
   public async run(sql: string, params: any[] = []): Promise<sqlite3.RunResult> {
     if (!this.db) {
-      throw new Error('Database not initialized');
+      throw new Error('Database not initialized. Call initialize() first.');
     }
 
     return new Promise((resolve, reject) => {
       this.db!.run(sql, params, function(err) {
         if (err) {
-          reject(err);
+          console.error('Database run error:', { sql, params, error: err.message });
+          reject(new Error(`Database operation failed: ${err.message}`));
         } else {
           resolve(this);
         }
@@ -94,13 +105,14 @@ export class DatabaseManager {
 
   public async get<T = any>(sql: string, params: any[] = []): Promise<T | undefined> {
     if (!this.db) {
-      throw new Error('Database not initialized');
+      throw new Error('Database not initialized. Call initialize() first.');
     }
 
     return new Promise((resolve, reject) => {
       this.db!.get(sql, params, (err, row) => {
         if (err) {
-          reject(err);
+          console.error('Database get error:', { sql, params, error: err.message });
+          reject(new Error(`Database query failed: ${err.message}`));
         } else {
           resolve(row as T);
         }
@@ -110,13 +122,14 @@ export class DatabaseManager {
 
   public async all<T = any>(sql: string, params: any[] = []): Promise<T[]> {
     if (!this.db) {
-      throw new Error('Database not initialized');
+      throw new Error('Database not initialized. Call initialize() first.');
     }
 
     return new Promise((resolve, reject) => {
       this.db!.all(sql, params, (err, rows) => {
         if (err) {
-          reject(err);
+          console.error('Database all error:', { sql, params, error: err.message });
+          reject(new Error(`Database query failed: ${err.message}`));
         } else {
           resolve(rows as T[]);
         }
@@ -124,35 +137,114 @@ export class DatabaseManager {
     });
   }
 
-  private async runMigrations(): Promise<void> {
-    console.log('Creating employees table...');
-    await this.createEmployeesTable();
-    
-    console.log('Creating time categories table...');
-    await this.createTimeCategoriesTable();
-    
-    console.log('Creating attendance records table...');
-    await this.createAttendanceRecordsTable();
-    
-    console.log('Creating time adjustments table...');
-    await this.createTimeAdjustmentsTable();
-    
-    console.log('Creating sync queue table...');
-    await this.createSyncQueueTable();
-    
-    console.log('Creating system settings table...');
-    await this.createSystemSettingsTable();
-    
-    console.log('Creating sync log table...');
-    await this.createSyncLogTable();
-    
-    console.log('Inserting default time categories...');
-    await this.insertDefaultTimeCategories();
-    
-    console.log('Inserting default system settings...');
-    await this.insertDefaultSystemSettings();
+  public async beginTransaction(): Promise<void> {
+    await this.run('BEGIN TRANSACTION');
+  }
 
-    console.log('Database migrations completed successfully');
+  public async commitTransaction(): Promise<void> {
+    await this.run('COMMIT');
+  }
+
+  public async rollbackTransaction(): Promise<void> {
+    await this.run('ROLLBACK');
+  }
+
+  public async withTransaction<T>(operation: () => Promise<T>): Promise<T> {
+    await this.beginTransaction();
+    try {
+      const result = await operation();
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      await this.rollbackTransaction();
+      throw error;
+    }
+  }
+
+  private async runMigrations(): Promise<void> {
+    try {
+      // Create migrations table first to track schema versions
+      await this.createMigrationsTable();
+      
+      const currentVersion = await this.getCurrentSchemaVersion();
+      console.log(`Current schema version: ${currentVersion}`);
+      
+      const migrations = this.getMigrations();
+      
+      for (const migration of migrations) {
+        if (migration.version > currentVersion) {
+          console.log(`Running migration ${migration.version}: ${migration.name}`);
+          await this.runSingleMigration(migration);
+          await this.updateSchemaVersion(migration.version, migration.name);
+          console.log(`Migration ${migration.version} completed successfully`);
+        }
+      }
+      
+      console.log('All database migrations completed successfully');
+    } catch (error) {
+      console.error('Migration failed:', error);
+      throw error;
+    }
+  }
+
+  private async createMigrationsTable(): Promise<void> {
+    const sql = `
+      CREATE TABLE IF NOT EXISTS schema_migrations (
+        version INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await this.run(sql);
+  }
+
+  private async getCurrentSchemaVersion(): Promise<number> {
+    try {
+      const result = await this.get<{ version: number }>('SELECT MAX(version) as version FROM schema_migrations');
+      return result?.version || 0;
+    } catch (error) {
+      // If table doesn't exist or query fails, assume version 0
+      return 0;
+    }
+  }
+
+  private async updateSchemaVersion(version: number, name: string): Promise<void> {
+    await this.run('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [version, name]);
+  }
+
+  private getMigrations(): Array<{ version: number; name: string; up: () => Promise<void> }> {
+    return [
+      {
+        version: 1,
+        name: 'Create core tables',
+        up: async () => {
+          await this.createEmployeesTable();
+          await this.createTimeCategoriesTable();
+          await this.createAttendanceRecordsTable();
+          await this.createTimeAdjustmentsTable();
+          await this.createSyncQueueTable();
+          await this.createSystemSettingsTable();
+          await this.createSyncLogTable();
+        }
+      },
+      {
+        version: 2,
+        name: 'Insert default data',
+        up: async () => {
+          await this.insertDefaultTimeCategories();
+          await this.insertDefaultSystemSettings();
+        }
+      }
+    ];
+  }
+
+  private async runSingleMigration(migration: { version: number; name: string; up: () => Promise<void> }): Promise<void> {
+    try {
+      await migration.up();
+    } catch (error) {
+      console.error(`Migration ${migration.version} failed:`, error);
+      throw error;
+    }
   }
 
   private async createEmployeesTable(): Promise<void> {

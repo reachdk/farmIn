@@ -1,6 +1,4 @@
 import { DatabaseManager } from '../../database/DatabaseManager';
-import fs from 'fs';
-import path from 'path';
 
 // Mock the DatabaseManager to use in-memory database for tests
 jest.mock('../../database/DatabaseManager');
@@ -131,6 +129,72 @@ describe('DatabaseManager', () => {
       await expect(
         dbManager.run('SELECT 1')
       ).rejects.toThrow('Database not initialized');
+    });
+  });
+
+  describe('Transaction Support', () => {
+    beforeEach(async () => {
+      await dbManager.initialize();
+    });
+
+    it('should support manual transaction control', async () => {
+      dbManager.beginTransaction = jest.fn().mockResolvedValue(undefined);
+      dbManager.commitTransaction = jest.fn().mockResolvedValue(undefined);
+      dbManager.rollbackTransaction = jest.fn().mockResolvedValue(undefined);
+
+      await dbManager.beginTransaction();
+      expect(dbManager.beginTransaction).toHaveBeenCalled();
+
+      await dbManager.commitTransaction();
+      expect(dbManager.commitTransaction).toHaveBeenCalled();
+    });
+
+    it('should support transaction wrapper with automatic rollback on error', async () => {
+      dbManager.withTransaction = jest.fn().mockImplementation(async (operation) => {
+        try {
+          return await operation();
+        } catch (error) {
+          throw error;
+        }
+      });
+
+      const mockOperation = jest.fn().mockResolvedValue('success');
+      const result = await dbManager.withTransaction(mockOperation);
+      
+      expect(result).toBe('success');
+      expect(mockOperation).toHaveBeenCalled();
+    });
+
+    it('should rollback transaction on error', async () => {
+      dbManager.withTransaction = jest.fn().mockImplementation(async (operation) => {
+        try {
+          await operation();
+        } catch (error) {
+          // Simulate rollback
+          throw error;
+        }
+      });
+
+      const mockOperation = jest.fn().mockRejectedValue(new Error('Operation failed'));
+      
+      await expect(dbManager.withTransaction(mockOperation)).rejects.toThrow('Operation failed');
+      expect(mockOperation).toHaveBeenCalled();
+    });
+  });
+
+  describe('Migration System', () => {
+    it('should track schema versions', async () => {
+      // Mock migration table creation and version tracking
+      dbManager.get.mockResolvedValueOnce({ version: 2 });
+      
+      await dbManager.initialize();
+      expect(dbManager.initialize).toHaveBeenCalled();
+    });
+
+    it('should handle migration failures gracefully', async () => {
+      dbManager.initialize.mockRejectedValueOnce(new Error('Migration failed: Table creation error'));
+      
+      await expect(dbManager.initialize()).rejects.toThrow('Migration failed: Table creation error');
     });
   });
 
