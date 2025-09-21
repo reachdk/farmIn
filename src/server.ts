@@ -1,5 +1,7 @@
 import express from 'express';
 import { DatabaseManager } from './database/DatabaseManager';
+import authRoutes from './routes/auth';
+import attendanceRoutes from './routes/attendance';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -7,6 +9,10 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

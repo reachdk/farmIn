@@ -1,6 +1,6 @@
 import { DatabaseManager } from '../database/DatabaseManager';
 import { Employee, CreateEmployeeData, UpdateEmployeeData, EmployeeValidator } from '../models/Employee';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export class EmployeeNotFoundError extends Error {
   constructor(identifier: string) {
@@ -47,7 +47,7 @@ export class EmployeeRepository {
     }
 
     const employee: Employee = {
-      id: uuidv4(),
+      id: randomUUID(),
       employeeNumber: data.employeeNumber.trim().toUpperCase(),
       firstName: data.firstName.trim(),
       lastName: data.lastName.trim(),

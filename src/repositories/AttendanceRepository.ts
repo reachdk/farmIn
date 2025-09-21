@@ -8,7 +8,7 @@ import {
   AttendanceValidator,
   AttendanceCalculator
 } from '../models/AttendanceRecord';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export class AttendanceNotFoundError extends Error {
   constructor(identifier: string) {
@@ -63,7 +63,7 @@ export class AttendanceRepository {
     }
 
     const record: AttendanceRecord = {
-      id: uuidv4(),
+      id: randomUUID(),
       employeeId: data.employeeId,
       clockInTime: data.clockInTime || new Date(),
       clockOutTime: undefined,
@@ -377,7 +377,7 @@ export class AttendanceRepository {
     `;
 
     await this.dbManager.run(sql, [
-      uuidv4(),
+      randomUUID(),
       adjustment.recordId,
       adjustment.adjustedBy,
       JSON.stringify(adjustment.originalValue),
@@ -424,7 +424,7 @@ export class AttendanceRepository {
       employeeId: row.employee_id,
       clockInTime: new Date(row.clock_in_time),
       clockOutTime: row.clock_out_time ? new Date(row.clock_out_time) : undefined,
-      totalHours: row.total_hours || undefined,
+      totalHours: row.total_hours !== null ? row.total_hours : undefined,
       timeCategory: row.time_category || undefined,
       notes: row.notes || undefined,
       adjustments,

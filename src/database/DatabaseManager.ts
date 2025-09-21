@@ -161,6 +161,13 @@ export class DatabaseManager {
     }
   }
 
+  public prepare(sql: string): sqlite3.Statement {
+    if (!this.db) {
+      throw new Error('Database not initialized. Call initialize() first.');
+    }
+    return this.db.prepare(sql);
+  }
+
   private async runMigrations(): Promise<void> {
     try {
       // Create migrations table first to track schema versions
@@ -233,6 +240,20 @@ export class DatabaseManager {
         up: async () => {
           await this.insertDefaultTimeCategories();
           await this.insertDefaultSystemSettings();
+        }
+      },
+      {
+        version: 3,
+        name: 'Update sync_queue table',
+        up: async () => {
+          await this.updateSyncQueueTable();
+        }
+      },
+      {
+        version: 4,
+        name: 'Create conflict resolution tables',
+        up: async () => {
+          await this.createConflictResolutionTables();
         }
       }
     ];
@@ -325,11 +346,13 @@ export class DatabaseManager {
         operation TEXT NOT NULL CHECK (operation IN ('create', 'update', 'delete')),
         entity_type TEXT NOT NULL,
         entity_id TEXT NOT NULL,
-        data TEXT NOT NULL,
+        data TEXT,
         attempts INTEGER NOT NULL DEFAULT 0,
         last_attempt DATETIME,
         status TEXT NOT NULL CHECK (status IN ('pending', 'processing', 'completed', 'failed')) DEFAULT 'pending',
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        conflict_data TEXT
       )
     `;
     await this.run(sql);
@@ -431,5 +454,74 @@ export class DatabaseManager {
         throw error;
       }
     }
+  }
+
+  private async updateSyncQueueTable(): Promise<void> {
+    // Check if columns already exist
+    const tableInfo = await this.all("PRAGMA table_info(sync_queue)") as Array<{name: string}>;
+    const columnNames = tableInfo.map(col => col.name);
+    
+    if (!columnNames.includes('updated_at')) {
+      await this.run('ALTER TABLE sync_queue ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP');
+    }
+    
+    if (!columnNames.includes('conflict_data')) {
+      await this.run('ALTER TABLE sync_queue ADD COLUMN conflict_data TEXT');
+    }
+  }
+
+  private async createConflictResolutionTables(): Promise<void> {
+    // Conflict resolutions table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS conflict_resolutions (
+        id TEXT PRIMARY KEY,
+        sync_queue_entry_id TEXT NOT NULL,
+        conflict_type TEXT NOT NULL CHECK (conflict_type IN ('timestamp', 'data', 'deletion')),
+        local_data TEXT NOT NULL,
+        remote_data TEXT NOT NULL,
+        conflict_fields TEXT NOT NULL,
+        resolution TEXT NOT NULL CHECK (resolution IN ('use_local', 'use_remote', 'merge', 'manual')),
+        resolved_data TEXT,
+        resolved_by TEXT,
+        resolved_at DATETIME,
+        status TEXT NOT NULL CHECK (status IN ('pending', 'resolved', 'failed')) DEFAULT 'pending',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sync_queue_entry_id) REFERENCES sync_queue (id)
+      )
+    `);
+
+    // Auto resolution rules table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS auto_resolution_rules (
+        id TEXT PRIMARY KEY,
+        entity_type TEXT NOT NULL,
+        conflict_type TEXT NOT NULL CHECK (conflict_type IN ('timestamp', 'data', 'deletion')),
+        field_pattern TEXT,
+        resolution TEXT NOT NULL CHECK (resolution IN ('use_local', 'use_remote', 'merge')),
+        priority INTEGER NOT NULL DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Conflict resolution log table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS conflict_resolution_log (
+        id TEXT PRIMARY KEY,
+        conflict_id TEXT NOT NULL,
+        resolution_type TEXT NOT NULL,
+        resolved_by TEXT NOT NULL,
+        resolved_at DATETIME NOT NULL,
+        details TEXT,
+        FOREIGN KEY (conflict_id) REFERENCES conflict_resolutions (id)
+      )
+    `);
+
+    // Create indexes for better performance
+    await this.run('CREATE INDEX IF NOT EXISTS idx_conflict_resolutions_status ON conflict_resolutions (status)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_conflict_resolutions_created_at ON conflict_resolutions (created_at)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_auto_resolution_rules_priority ON auto_resolution_rules (priority DESC)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_conflict_resolution_log_resolved_at ON conflict_resolution_log (resolved_at DESC)');
   }
 }

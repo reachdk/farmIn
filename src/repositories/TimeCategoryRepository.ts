@@ -7,7 +7,7 @@ import {
   TimeCategoryLogic,
   TimeCategoryConflictError
 } from '../models/TimeCategory';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export class TimeCategoryNotFoundError extends Error {
   constructor(identifier: string) {
@@ -49,7 +49,7 @@ export class TimeCategoryRepository {
     TimeCategoryLogic.validateNoConflicts(data, existingCategories);
 
     const category: TimeCategory = {
-      id: uuidv4(),
+      id: randomUUID(),
       name: data.name.trim(),
       minHours: data.minHours,
       maxHours: data.maxHours || undefined,
