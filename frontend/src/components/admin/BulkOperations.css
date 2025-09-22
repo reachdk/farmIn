@@ -1,0 +1,212 @@
+.bulk-operations {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bulk-operations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.selection-count {
+  font-weight: 600;
+  color: #856404;
+  font-size: 14px;
+}
+
+.clear-selection {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #856404;
+  padding: 2px;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.clear-selection:hover {
+  background-color: rgba(133, 100, 4, 0.1);
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bulk-action-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.bulk-action-button.activate {
+  background-color: #28a745;
+  color: white;
+}
+
+.bulk-action-button.activate:hover {
+  background-color: #218838;
+}
+
+.bulk-action-button.deactivate {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.bulk-action-button.deactivate:hover {
+  background-color: #e0a800;
+}
+
+.bulk-action-button.update-role {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.bulk-action-button.update-role:hover {
+  background-color: #138496;
+}
+
+.bulk-action-button.delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.bulk-action-button.delete:hover {
+  background-color: #c82333;
+}
+
+.role-update-section {
+  display: flex;
+  align-items: center;
+}
+
+.role-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: white;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.role-select {
+  border: none;
+  background: none;
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.apply-role-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.apply-role-button:hover {
+  background-color: #218838;
+}
+
+.cancel-role-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.cancel-role-button:hover {
+  background-color: #5a6268;
+}
+
+.bulk-operations-note {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ffeaa7;
+}
+
+.bulk-operations-note small {
+  color: #856404;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .bulk-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bulk-action-button {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .role-update-section {
+    width: 100%;
+  }
+  
+  .role-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .role-select {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .bulk-operations {
+    padding: 12px;
+  }
+  
+  .bulk-operations-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .selection-count {
+    text-align: center;
+  }
+  
+  .clear-selection {
+    align-self: center;
+  }
+}

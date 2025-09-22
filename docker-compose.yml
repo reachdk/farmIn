@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # Main application
+  farm-attendance:
+    build:
+      context: .
+      target: production
+    container_name: farm-attendance-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - farm_data:/app/data
+      - farm_uploads:/app/uploads
+      - farm_backups:/app/backups
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_PATH=/app/data/farm_attendance.db
+      - UPLOAD_PATH=/app/uploads
+      - BACKUP_PATH=/app/backups
+      - AUTO_BACKUP_ENABLED=true
+      - AUTO_BACKUP_INTERVAL=24h
+      - MAX_BACKUP_FILES=7
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - farm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: farm-attendance-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - farm_uploads:/var/www/uploads:ro
+    depends_on:
+      - farm-attendance
+    networks:
+      - farm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # Backup service
+  backup:
+    build:
+      context: .
+      target: production
+    container_name: farm-attendance-backup
+    restart: unless-stopped
+    volumes:
+      - farm_data:/app/data:ro
+      - farm_backups:/app/backups
+      - ./scripts:/app/scripts:ro
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/app/data/farm_attendance.db
+      - BACKUP_PATH=/app/backups
+    command: ["node", "/app/scripts/backup-scheduler.js"]
+    depends_on:
+      - farm-attendance
+    networks:
+      - farm-network
+
+volumes:
+  farm_data:
+    driver: local
+  farm_uploads:
+    driver: local
+  farm_backups:
+    driver: local
+
+networks:
+  farm-network:
+    driver: bridge

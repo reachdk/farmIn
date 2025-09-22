@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Development application
+  farm-attendance-dev:
+    build:
+      context: .
+      target: development
+    container_name: farm-attendance-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - farm_dev_data:/app/data
+      - farm_dev_uploads:/app/uploads
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_PATH=/app/data/farm_attendance.db
+      - UPLOAD_PATH=/app/uploads
+    networks:
+      - farm-dev-network
+    command: ["npm", "run", "dev"]
+
+  # Frontend development (if using separate frontend build)
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: farm-attendance-frontend-dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - farm-dev-network
+    command: ["npm", "start"]
+
+volumes:
+  farm_dev_data:
+    driver: local
+  farm_dev_uploads:
+    driver: local
+
+networks:
+  farm-dev-network:
+    driver: bridge

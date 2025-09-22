@@ -12,6 +12,9 @@ module.exports = {
   moduleNameMapper: {
     '^uuid$': require.resolve('uuid')
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(uuid)/)'
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
@@ -28,5 +31,6 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/'
-  ]
+  ],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts']
 };

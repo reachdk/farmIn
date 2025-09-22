@@ -255,6 +255,28 @@ export class DatabaseManager {
         up: async () => {
           await this.createConflictResolutionTables();
         }
+      },
+      {
+        version: 5,
+        name: 'Create camera and photo tables',
+        up: async () => {
+          await this.createCameraTables();
+        }
+      },
+      {
+        version: 6,
+        name: 'Create hardware and RFID tables',
+        up: async () => {
+          await this.createHardwareTables();
+          await this.createRFIDTables();
+        }
+      },
+      {
+        version: 7,
+        name: 'Update attendance records for kiosk support',
+        up: async () => {
+          await this.updateAttendanceRecordsTable();
+        }
       }
     ];
   }
@@ -523,5 +545,262 @@ export class DatabaseManager {
     await this.run('CREATE INDEX IF NOT EXISTS idx_conflict_resolutions_created_at ON conflict_resolutions (created_at)');
     await this.run('CREATE INDEX IF NOT EXISTS idx_auto_resolution_rules_priority ON auto_resolution_rules (priority DESC)');
     await this.run('CREATE INDEX IF NOT EXISTS idx_conflict_resolution_log_resolved_at ON conflict_resolution_log (resolved_at DESC)');
+  }
+
+  private async createCameraTables(): Promise<void> {
+    // Camera devices table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS camera_devices (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        device_id TEXT UNIQUE NOT NULL,
+        resolution TEXT NOT NULL,
+        is_active BOOLEAN NOT NULL DEFAULT 1,
+        capabilities TEXT NOT NULL DEFAULT '{}',
+        settings TEXT NOT NULL DEFAULT '{}',
+        last_used DATETIME,
+        last_tested DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Photos table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS photos (
+        id TEXT PRIMARY KEY,
+        filename TEXT NOT NULL,
+        thumbnail_filename TEXT NOT NULL,
+        employee_id TEXT,
+        device_id TEXT,
+        attendance_record_id TEXT,
+        file_size INTEGER NOT NULL,
+        width INTEGER NOT NULL,
+        height INTEGER NOT NULL,
+        format TEXT NOT NULL,
+        purpose TEXT NOT NULL CHECK (purpose IN ('attendance', 'verification', 'profile', 'manual')),
+        location TEXT,
+        notes TEXT,
+        uploaded_by TEXT NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (employee_id) REFERENCES employees (id),
+        FOREIGN KEY (device_id) REFERENCES camera_devices (id),
+        FOREIGN KEY (attendance_record_id) REFERENCES attendance_records (id),
+        FOREIGN KEY (uploaded_by) REFERENCES employees (id)
+      )
+    `);
+
+    // Face detection results table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS face_detection_results (
+        id TEXT PRIMARY KEY,
+        photo_id TEXT NOT NULL,
+        detected BOOLEAN NOT NULL DEFAULT 0,
+        confidence REAL NOT NULL DEFAULT 0,
+        bounding_box TEXT,
+        landmarks TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (photo_id) REFERENCES photos (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Face recognition results table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS face_recognition_results (
+        id TEXT PRIMARY KEY,
+        photo_id TEXT NOT NULL,
+        detected BOOLEAN NOT NULL DEFAULT 0,
+        confidence REAL NOT NULL DEFAULT 0,
+        matched_employee_id TEXT,
+        match_confidence REAL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (photo_id) REFERENCES photos (id) ON DELETE CASCADE,
+        FOREIGN KEY (matched_employee_id) REFERENCES employees (id)
+      )
+    `);
+
+    // Face recognition models table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS face_recognition_models (
+        id TEXT PRIMARY KEY,
+        employee_id TEXT NOT NULL,
+        model_data TEXT NOT NULL,
+        training_photos INTEGER NOT NULL DEFAULT 0,
+        accuracy REAL NOT NULL DEFAULT 0,
+        is_active BOOLEAN NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (employee_id) REFERENCES employees (id)
+      )
+    `);
+
+    // Photo processing jobs table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS photo_processing_jobs (
+        id TEXT PRIMARY KEY,
+        photo_id TEXT NOT NULL,
+        job_type TEXT NOT NULL CHECK (job_type IN ('face_detection', 'face_recognition', 'quality_enhancement')),
+        status TEXT NOT NULL CHECK (status IN ('queued', 'processing', 'completed', 'failed')) DEFAULT 'queued',
+        progress INTEGER NOT NULL DEFAULT 0,
+        result TEXT,
+        error TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        completed_at DATETIME,
+        FOREIGN KEY (photo_id) REFERENCES photos (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create indexes for better performance
+    await this.run('CREATE INDEX IF NOT EXISTS idx_photos_employee_id ON photos (employee_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_photos_device_id ON photos (device_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_photos_attendance_record_id ON photos (attendance_record_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_photos_purpose ON photos (purpose)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_photos_created_at ON photos (created_at DESC)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_face_detection_results_photo_id ON face_detection_results (photo_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_face_recognition_results_photo_id ON face_recognition_results (photo_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_face_recognition_results_matched_employee ON face_recognition_results (matched_employee_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_face_recognition_models_employee_id ON face_recognition_models (employee_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_photo_processing_jobs_status ON photo_processing_jobs (status)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_camera_devices_device_id ON camera_devices (device_id)');
+  }
+
+  private async createHardwareTables(): Promise<void> {
+    // Hardware devices table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS hardware_devices (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL CHECK (type IN ('kiosk', 'rfid_reader', 'camera')),
+        location TEXT NOT NULL,
+        ip_address TEXT,
+        status TEXT NOT NULL CHECK (status IN ('online', 'offline', 'error')) DEFAULT 'offline',
+        last_seen DATETIME,
+        capabilities TEXT NOT NULL DEFAULT '[]',
+        configuration TEXT NOT NULL DEFAULT '{}',
+        system_health TEXT DEFAULT '{}',
+        errors TEXT DEFAULT '[]',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Device heartbeat log table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS device_heartbeats (
+        id TEXT PRIMARY KEY,
+        device_id TEXT NOT NULL,
+        timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        status TEXT NOT NULL,
+        system_health TEXT,
+        errors TEXT,
+        FOREIGN KEY (device_id) REFERENCES hardware_devices (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Device commands table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS device_commands (
+        id TEXT PRIMARY KEY,
+        device_id TEXT NOT NULL,
+        command TEXT NOT NULL,
+        parameters TEXT DEFAULT '{}',
+        status TEXT NOT NULL CHECK (status IN ('pending', 'sent', 'completed', 'failed')) DEFAULT 'pending',
+        result TEXT,
+        error TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        sent_at DATETIME,
+        completed_at DATETIME,
+        FOREIGN KEY (device_id) REFERENCES hardware_devices (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create indexes for better performance
+    await this.run('CREATE INDEX IF NOT EXISTS idx_hardware_devices_type ON hardware_devices (type)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_hardware_devices_status ON hardware_devices (status)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_hardware_devices_location ON hardware_devices (location)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_device_heartbeats_device_id ON device_heartbeats (device_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_device_heartbeats_timestamp ON device_heartbeats (timestamp DESC)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_device_commands_device_id ON device_commands (device_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_device_commands_status ON device_commands (status)');
+  }
+
+  private async createRFIDTables(): Promise<void> {
+    // RFID cards table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS rfid_cards (
+        card_id TEXT PRIMARY KEY,
+        employee_id TEXT,
+        is_active INTEGER DEFAULT 1,
+        last_used TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (employee_id) REFERENCES employees (id)
+      )
+    `);
+
+    // RFID readers table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS rfid_readers (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        device_path TEXT NOT NULL,
+        baud_rate INTEGER DEFAULT 9600,
+        status TEXT DEFAULT 'disconnected',
+        last_heartbeat TEXT,
+        capabilities TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // RFID scans table
+    await this.run(`
+      CREATE TABLE IF NOT EXISTS rfid_scans (
+        id TEXT PRIMARY KEY,
+        card_id TEXT NOT NULL,
+        reader_id TEXT NOT NULL,
+        timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+        signal_strength INTEGER,
+        raw_data TEXT,
+        processed INTEGER DEFAULT 0,
+        FOREIGN KEY (card_id) REFERENCES rfid_cards (card_id),
+        FOREIGN KEY (reader_id) REFERENCES rfid_readers (id)
+      )
+    `);
+
+    // Create indexes for better performance
+    await this.run('CREATE INDEX IF NOT EXISTS idx_rfid_cards_employee_id ON rfid_cards (employee_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_rfid_cards_is_active ON rfid_cards (is_active)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_rfid_readers_status ON rfid_readers (status)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_rfid_scans_card_id ON rfid_scans (card_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_rfid_scans_reader_id ON rfid_scans (reader_id)');
+    await this.run('CREATE INDEX IF NOT EXISTS idx_rfid_scans_timestamp ON rfid_scans (timestamp DESC)');
+  }
+
+  // Add missing columns to attendance_records for kiosk functionality
+  private async updateAttendanceRecordsTable(): Promise<void> {
+    const tableInfo = await this.all("PRAGMA table_info(attendance_records)") as Array<{name: string}>;
+    const columnNames = tableInfo.map(col => col.name);
+    
+    if (!columnNames.includes('location')) {
+      await this.run('ALTER TABLE attendance_records ADD COLUMN location TEXT');
+    }
+    
+    if (!columnNames.includes('device_id')) {
+      await this.run('ALTER TABLE attendance_records ADD COLUMN device_id TEXT');
+    }
+    
+    if (!columnNames.includes('photo_id')) {
+      await this.run('ALTER TABLE attendance_records ADD COLUMN photo_id TEXT');
+    }
+    
+    if (!columnNames.includes('clock_out_device_id')) {
+      await this.run('ALTER TABLE attendance_records ADD COLUMN clock_out_device_id TEXT');
+    }
+    
+    if (!columnNames.includes('clock_out_photo_id')) {
+      await this.run('ALTER TABLE attendance_records ADD COLUMN clock_out_photo_id TEXT');
+    }
   }
 }

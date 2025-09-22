@@ -1,0 +1,199 @@
+.hardware-management {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hardware-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.hardware-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+}
+
+.quick-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+.stat-item.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.hardware-nav {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+  background-color: white;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.nav-tab {
+  background: none;
+  border: none;
+  padding: 15px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.nav-tab.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.hardware-content {
+  background-color: white;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  min-height: 400px;
+}
+
+.devices-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.devices-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.devices-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.discover-button {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.discover-button:hover:not(:disabled) {
+  background-color: #138496;
+}
+
+.discover-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.register-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.register-button:hover {
+  background-color: #218838;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .hardware-management {
+    padding: 15px;
+  }
+  
+  .hardware-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .quick-stats {
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .hardware-nav {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .hardware-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab {
+    padding: 12px 15px;
+    font-size: 13px;
+  }
+
+  .hardware-content {
+    padding: 15px;
+  }
+
+  .devices-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .devices-actions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,148 @@
+.kiosk-app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+
+.kiosk-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.5rem;
+  font-weight: 300;
+  text-align: center;
+}
+
+.dev-controls {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 9999;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.dev-controls:hover {
+  opacity: 1;
+}
+
+.fullscreen-toggle {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.fullscreen-toggle:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Hide scrollbars in kiosk mode */
+.kiosk-app ::-webkit-scrollbar {
+  display: none;
+}
+
+.kiosk-app {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Prevent text selection and highlighting */
+.kiosk-app * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure full coverage on all screen sizes */
+@media screen and (max-width: 1024px) {
+  .kiosk-app {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+}
+
+/* Handle orientation changes */
+@media screen and (orientation: landscape) {
+  .kiosk-app {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+@media screen and (orientation: portrait) {
+  .kiosk-app {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+/* Accessibility - high contrast mode */
+@media (prefers-contrast: high) {
+  .kiosk-loading {
+    background: #000;
+    color: #fff;
+  }
+  
+  .loading-spinner {
+    border-color: rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+  }
+  
+  .fullscreen-toggle {
+    background: #000;
+    border-color: #fff;
+    color: #fff;
+  }
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+    border: 4px solid white;
+  }
+  
+  .dev-controls {
+    transition: none;
+  }
+  
+  .fullscreen-toggle {
+    transition: none;
+  }
+}

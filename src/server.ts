@@ -2,6 +2,9 @@ import express from 'express';
 import { DatabaseManager } from './database/DatabaseManager';
 import authRoutes from './routes/auth';
 import attendanceRoutes from './routes/attendance';
+import cameraRoutes from './routes/camera';
+import kioskRoutes from './routes/kiosk';
+import systemRoutes from './routes/system';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +16,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/camera', cameraRoutes);
+app.use('/api/kiosk', kioskRoutes);
+app.use('/api/system', systemRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

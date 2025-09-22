@@ -1,0 +1,147 @@
+.system-stats-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.system-stats-card.loading,
+.system-stats-card.error {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-content {
+  padding: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-icon {
+  font-size: 24px;
+  width: 40px;
+  text-align: center;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+.stat-percentage {
+  font-size: 11px;
+  color: #28a745;
+  font-weight: 600;
+}
+
+.stats-details {
+  margin-bottom: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.detail-value.warning {
+  color: #ffc107;
+}
+
+.detail-value.success {
+  color: #28a745;
+}
+
+.stats-summary {
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.summary-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.summary-status.healthy {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.summary-status.warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+}

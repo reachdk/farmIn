@@ -1,0 +1,279 @@
+.device-card {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.device-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.device-card.online {
+  border-left: 4px solid #28a745;
+}
+
+.device-card.offline {
+  border-left: 4px solid #6c757d;
+}
+
+.device-card.error {
+  border-left: 4px solid #dc3545;
+}
+
+.device-card.list {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+}
+
+.device-card.list:hover {
+  transform: none;
+}
+
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.device-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.device-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.device-details h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.device-details p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.device-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+}
+
+.device-body {
+  margin-bottom: 15px;
+}
+
+.device-type {
+  margin-bottom: 10px;
+}
+
+.type-badge {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.device-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.capability-tag {
+  background-color: #007bff;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.device-health {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.health-metric {
+  display: flex;
+  gap: 5px;
+}
+
+.metric-label {
+  color: #666;
+}
+
+.metric-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.device-last-seen {
+  font-size: 11px;
+  color: #666;
+}
+
+.device-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.quick-commands {
+  display: flex;
+  gap: 5px;
+}
+
+.quick-command-button {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.quick-command-button:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #007bff;
+}
+
+.quick-command-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.action-button:hover {
+  background-color: #f8f9fa;
+}
+
+.action-button.delete:hover {
+  background-color: #f8d7da;
+}
+
+.device-errors {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.error-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* List view specific styles */
+.device-card.list .device-header {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.device-card.list .device-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.device-card.list .device-actions {
+  border-top: none;
+  padding-top: 0;
+  margin-left: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .device-card {
+    padding: 15px;
+  }
+  
+  .device-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .device-status {
+    align-self: flex-start;
+  }
+  
+  .device-health {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .device-actions {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .quick-commands,
+  .action-buttons {
+    justify-content: center;
+  }
+}

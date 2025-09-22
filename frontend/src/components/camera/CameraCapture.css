@@ -1,0 +1,268 @@
+.camera-capture {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.capture-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  min-height: 600px;
+}
+
+.capture-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.device-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.device-selector label {
+  font-weight: 600;
+  color: #333;
+}
+
+.device-selector select {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.device-selector select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.preview-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.preview-container {
+  flex: 1;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.camera-preview,
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  text-align: center;
+}
+
+.preview-placeholder span {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.preview-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.preview-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview-button.start {
+  background: #28a745;
+  color: white;
+}
+
+.preview-button.start:hover:not(:disabled) {
+  background: #218838;
+}
+
+.preview-button.stop {
+  background: #dc3545;
+  color: white;
+}
+
+.preview-button.stop:hover {
+  background: #c82333;
+}
+
+.preview-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.capture-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.capture-button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.capture-button.single {
+  background: #007bff;
+  color: white;
+}
+
+.capture-button.single:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.capture-button.batch {
+  background: #6f42c1;
+  color: white;
+}
+
+.capture-button.batch:hover:not(:disabled) {
+  background: #5a32a3;
+}
+
+.capture-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.capture-settings {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.capture-settings h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-group label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.setting-group select,
+.setting-group input,
+.setting-group textarea {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.setting-group select:focus,
+.setting-group input:focus,
+.setting-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.setting-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.batch-settings {
+  border-top: 1px solid #dee2e6;
+  padding-top: 15px;
+}
+
+.batch-settings h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.device-info {
+  border-top: 1px solid #dee2e6;
+  padding-top: 15px;
+}
+
+.device-info h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.device-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.device-info ul {
+  margin: 5px 0 0 20px;
+  padding: 0;
+}
+
+.device-info li {
+  font-size: 14px;
+  color: #666;
+  margin: 2px 0;
+}
+
+@media (max-width: 768px) {
+  .capture-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .capture-controls {
+    flex-direction: column;
+  }
+  
+  .capture-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
