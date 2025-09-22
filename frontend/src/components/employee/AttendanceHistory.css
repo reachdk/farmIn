@@ -1,0 +1,355 @@
+.attendance-history {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.history-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.export-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.export-btn:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.export-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.date-filters {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #e5e7eb;
+}
+
+.preset-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.preset-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.preset-btn.active {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.custom-date-range {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.custom-date-range label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.custom-date-range input[type="date"] {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.category-breakdown {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+}
+
+.category-breakdown h3 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.category-name {
+  font-weight: 500;
+  color: #374151;
+}
+
+.category-hours {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.records-table {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.records-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.records-table th {
+  background: #f9fafb;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+}
+
+.records-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
+}
+
+.record-row:hover {
+  background-color: #f9fafb;
+}
+
+.record-row.pending {
+  background-color: #fef3c7;
+}
+
+.record-row.conflict {
+  background-color: #fee2e2;
+}
+
+.date-cell {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.time-cell {
+  font-family: 'Courier New', monospace;
+  color: #374151;
+}
+
+.hours-cell {
+  font-weight: 500;
+  color: #059669;
+}
+
+.category-cell .category-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.category-tag.regular {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.category-tag.overtime {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.category-tag.holiday {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.category-tag.sick {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-cell {
+  text-align: center;
+}
+
+.sync-status {
+  font-size: 1rem;
+}
+
+.sync-status.synced {
+  color: #059669;
+}
+
+.sync-status.pending {
+  color: #d97706;
+}
+
+.sync-status.conflict {
+  color: #dc2626;
+}
+
+.in-progress {
+  color: #3b82f6;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.no-records {
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.loading, .error {
+  padding: 3rem;
+  text-align: center;
+  font-size: 1.125rem;
+}
+
+.loading {
+  color: #6b7280;
+}
+
+.error {
+  color: #dc2626;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .attendance-history {
+    padding: 1rem;
+  }
+
+  .history-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .preset-filters {
+    justify-content: center;
+  }
+
+  .custom-date-range {
+    justify-content: center;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .records-table {
+    overflow-x: auto;
+  }
+
+  .records-table table {
+    min-width: 600px;
+  }
+
+  .category-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .preset-filters {
+    flex-direction: column;
+  }
+
+  .custom-date-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .custom-date-range label {
+    align-items: stretch;
+  }
+}
